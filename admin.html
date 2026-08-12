@@ -322,10 +322,10 @@
     d.textContent = str;
     return d.innerHTML;
   }
-
   function getBaseURL() {
-    const eventSlug = slugify(document.getElementById('eventName').value || 'event');
-    return 'kailaadenaorlin-bit/Undangan-Event-UMKM /' + eventSlug;
+  const eventSlug = slugify(document.getElementById('eventName').value || 'event');
+  return 'https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/' + eventSlug;
+}
   }
 
   function getPersonalURL(index) {

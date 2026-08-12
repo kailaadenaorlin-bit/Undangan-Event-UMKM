@@ -292,7 +292,7 @@
     <div class="link-label">Link Utama (untuk disalin secara umum)</div>
     <div class="link-box">
       <i class="fa-solid fa-globe link-icon"></i>
-      <span class="link-url" id="mainLink">—</span>
+      <span class="link-url" id="mainLink">https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/</span>
     </div>
     <div class="link-row">
       <button class="btn btn-copy btn-sm" onclick="copyMainLink()"><i class="fa-solid fa-copy"></i> Salin Link Utama</button>
@@ -326,7 +326,7 @@
   const eventSlug = slugify(document.getElementById('eventName').value || 'event');
   return 'https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/img.jpg' + eventSlug;
 }
-  }
+  
 
   function getPersonalURL(index) {
     return getBaseURL() + '?tamu=' + encodeURIComponent(guests[index]);

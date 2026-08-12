@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta property="og:image" content="https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/img.jpg">
   <title>Admin Event — Undangan Digital</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -139,10 +138,101 @@
     .btn-copy { background: var(--success); color: #fff; }
     .btn-copy:hover { background: #3d7a5e; }
     .btn-sm { padding: 7px 12px; font-size: 12px; }
+    .btn-danger-outline { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
+    .btn-danger-outline:hover { background: var(--danger-light); }
 
     /* ===== EVENT FORM ===== */
     .event-form { display: grid; gap: 14px; }
     .field-label { font-size: 13px; font-weight: 600; color: var(--fg); margin-bottom: 5px; display: block; }
+
+    /* ===== THUMBNAIL ===== */
+    .thumb-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+    .thumb-upload-zone:hover,
+    .thumb-upload-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .thumb-upload-zone.drag-over .thumb-placeholder i { transform: scale(1.15); }
+
+    .thumb-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      gap: 8px;
+      pointer-events: none;
+    }
+    .thumb-placeholder i {
+      font-size: 36px;
+      color: var(--accent);
+      transition: transform 0.25s;
+    }
+    .thumb-placeholder .thumb-main-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .thumb-placeholder .thumb-sub-text {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .thumb-preview-wrapper {
+      position: relative;
+      display: none;
+    }
+    .thumb-preview-wrapper.active { display: block; }
+
+    .thumb-preview-img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      object-fit: cover;
+      max-height: 360px;
+      background: var(--bg);
+    }
+
+    .thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(26,26,26,0.5);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .thumb-preview-wrapper:hover .thumb-overlay { opacity: 1; }
+
+    .thumb-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .thumb-info i { color: var(--success); }
+    .thumb-filename {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+      font-weight: 500;
+      color: var(--fg);
+    }
 
     /* ===== GUEST INPUT ===== */
     .guest-input-row { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -214,6 +304,7 @@
       padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #fff;
       animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
       box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      display: flex; align-items: center; gap: 8px;
     }
     .toast-success { background: var(--success); }
     .toast-info { background: var(--accent); }
@@ -230,6 +321,8 @@
       .link-row .btn { width: 100%; }
       .broadcast-actions { flex-direction: column; width: 100%; }
       .broadcast-actions .btn { width: 100%; }
+      .thumb-placeholder { padding: 28px 16px; }
+      .thumb-preview-img { max-height: 220px; }
     }
 
     ::-webkit-scrollbar { width: 6px; }
@@ -265,7 +358,37 @@
     </div>
   </section>
 
-  <!-- 2. DAFTAR TAMU -->
+  <!-- 2. THUMBNAIL -->
+  <section class="section-card">
+    <div class="section-title"><i class="fa-solid fa-image"></i> Thumbnail Undangan</div>
+
+    <!-- Upload Zone -->
+    <div class="thumb-upload-zone" id="thumbZone" onclick="document.getElementById('thumbFile').click()">
+      <input type="file" id="thumbFile" accept="image/*" style="display:none" onchange="handleThumbUpload(this)">
+      <div class="thumb-placeholder" id="thumbPlaceholder">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <div class="thumb-main-text">Klik atau seret gambar ke sini</div>
+        <div class="thumb-sub-text">JPG, PNG, WebP — Maks. 5 MB</div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="thumb-preview-wrapper" id="thumbPreview">
+      <img class="thumb-preview-img" id="thumbImg" src="" alt="Thumbnail undangan">
+      <div class="thumb-overlay">
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('thumbFile').click()"><i class="fa-solid fa-arrows-rotate"></i> Ganti</button>
+        <button class="btn btn-danger-outline btn-sm" onclick="removeThumb()"><i class="fa-solid fa-trash-can"></i> Hapus</button>
+      </div>
+    </div>
+
+    <div class="thumb-info" id="thumbInfo" style="display:none">
+      <i class="fa-solid fa-circle-check"></i>
+      <span class="thumb-filename" id="thumbFilename"></span>
+      <span id="thumbSize"></span>
+    </div>
+  </section>
+
+  <!-- 3. DAFTAR TAMU -->
   <section class="section-card">
     <div class="section-title"><i class="fa-solid fa-users"></i> Daftar Tamu</div>
     <div class="guest-input-row">
@@ -276,7 +399,7 @@
     <div class="guest-count" id="guestCount"></div>
   </section>
 
-  <!-- 3. UCAPAN -->
+  <!-- 4. UCAPAN -->
   <section class="section-card">
     <div class="section-title"><i class="fa-solid fa-heart"></i> Kalimat Ucapan</div>
     <div>
@@ -285,14 +408,14 @@
     </div>
   </section>
 
-  <!-- 4. LINK UNDIANGAN -->
+  <!-- 5. LINK UNDIANGAN -->
   <section class="section-card">
     <div class="section-title"><i class="fa-solid fa-link"></i> Link Undangan</div>
 
     <div class="link-label">Link Utama (untuk disalin secara umum)</div>
     <div class="link-box">
       <i class="fa-solid fa-globe link-icon"></i>
-      <span class="link-url" id="mainLink">https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/</span>
+      <span class="link-url" id="mainLink">—</span>
     </div>
     <div class="link-row">
       <button class="btn btn-copy btn-sm" onclick="copyMainLink()"><i class="fa-solid fa-copy"></i> Salin Link Utama</button>
@@ -312,6 +435,94 @@
   // ===== STATE =====
   let guests = ['Bapak Hadi Suryono', 'Ibu Ratna Dewi', 'Keluarga Bpk. Agus Pratama', 'Saudara Fajar Nugroho', 'Ibu Lina Kusuma'];
 
+  // ===== THUMBNAIL DEFAULT IMAGE =====
+  const DEFAULT_THUMB_URL = 'https://z-cdn-media.chatglm.cn/files/a1594dc7-beac-479b-9a93-3eb3f258aba5.jpg?auth_key=1886508349-8a6b48bede014b6e89fd99281684f873-0-357832014cb03fbf71f31400ecdc6716';
+
+  const thumbZone = document.getElementById('thumbZone');
+  const thumbPreview = document.getElementById('thumbPreview');
+  const thumbImg = document.getElementById('thumbImg');
+  const thumbInfo = document.getElementById('thumbInfo');
+  const thumbFilename = document.getElementById('thumbFilename');
+  const thumbSizeEl = document.getElementById('thumbSize');
+
+  // Muat gambar default saat pertama kali
+  function initThumbnail() {
+    thumbImg.src = DEFAULT_THUMB_URL;
+    thumbZone.style.display = 'none';
+    thumbPreview.classList.add('active');
+    thumbInfo.style.display = 'flex';
+    thumbFilename.textContent = 'img.jpg';
+    thumbSizeEl.textContent = '— Foto default';
+  }
+
+  // Drag & Drop
+  thumbZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    thumbZone.classList.add('drag-over');
+  });
+  thumbZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    thumbZone.classList.remove('drag-over');
+  });
+  thumbZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    thumbZone.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      processThumbFile(files[0]);
+    }
+  });
+
+  function handleThumbUpload(input) {
+    if (input.files.length > 0) {
+      processThumbFile(input.files[0]);
+    }
+  }
+
+  function processThumbFile(file) {
+    if (!file.type.startsWith('image/')) {
+      showToast('File harus berupa gambar (JPG/PNG/WebP)', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Ukuran gambar maksimal 5 MB', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      applyThumbnail(e.target.result, file.name, formatFileSize(file.size));
+      showToast('Thumbnail berhasil diunggah', 'success');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function applyThumbnail(src, name, size) {
+    thumbImg.src = src;
+    thumbZone.style.display = 'none';
+    thumbPreview.classList.add('active');
+    thumbInfo.style.display = 'flex';
+    thumbFilename.textContent = name;
+    thumbSizeEl.textContent = '— ' + size;
+  }
+
+  function removeThumb() {
+    thumbImg.src = '';
+    thumbZone.style.display = '';
+    thumbPreview.classList.remove('active');
+    thumbInfo.style.display = 'none';
+    thumbFilename.textContent = '';
+    thumbSizeEl.textContent = '';
+    document.getElementById('thumbFile').value = '';
+    showToast('Thumbnail dihapus', 'info');
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
   // ===== HELPERS =====
   function slugify(name) {
     return name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').trim();
@@ -322,17 +533,17 @@
     d.textContent = str;
     return d.innerHTML;
   }
+
   function getBaseURL() {
-  const eventSlug = slugify(document.getElementById('eventName').value || 'event');
-  return 'https://kailaadenaorlin-bit.github.io/Undangan-Event-UMKM/img.jpg' + eventSlug;
-}
-  
+    const eventSlug = slugify(document.getElementById('eventName').value || 'event');
+    return 'https://undangan.app/' + eventSlug;
+  }
 
   function getPersonalURL(index) {
     return getBaseURL() + '?tamu=' + encodeURIComponent(guests[index]);
   }
 
-  // ===== RENDER GUEST LIST (Form Tamu) =====
+  // ===== RENDER GUEST LIST =====
   function renderGuests() {
     const list = document.getElementById('guestList');
     const count = document.getElementById('guestCount');
@@ -364,7 +575,7 @@
     document.getElementById('mainLink').textContent = getBaseURL();
   }
 
-  // ===== RENDER BROADCAST LIST (Kirim WA) =====
+  // ===== RENDER BROADCAST LIST =====
   function renderBroadcast() {
     const list = document.getElementById('broadcastList');
     if (guests.length === 0) {
@@ -429,15 +640,11 @@
     const eventName = document.getElementById('eventName').value || 'Event';
     const message = document.getElementById('invitationMessage').value || '';
     
-    // Susun teks pesan
     let text = `Yth. ${name}\n\n`;
     text += message + '\n\n';
     text += `Detail: ${eventName}\n`;
     text += `Lihat undangan: ${url}`;
 
-    // Buka WhatsApp API (tanpa nomor HP). 
-    // Ini akan membuka WhatsApp Web/Desktop dengan pesan siap kirim.
-    // Anda tinggal memilih kontak tujuan di WA, lalu klik Kirim.
     window.open(`https://api.whatsapp.com/send?text=` + encodeURIComponent(text), '_blank');
     showToast(`Membuka WhatsApp untuk "${name}"`, 'success');
   }
@@ -467,7 +674,7 @@
     const c = document.getElementById('toastContainer');
     const t = document.createElement('div');
     t.className = 'toast toast-' + (type || 'info');
-    t.textContent = msg;
+    t.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'circle-check' : type === 'error' ? 'circle-xmark' : 'circle-info'}"></i> ${msg}`;
     c.appendChild(t);
     setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 3000);
   }
@@ -482,6 +689,7 @@
   });
 
   // ===== INIT =====
+  initThumbnail();
   renderGuests();
 </script>
 
